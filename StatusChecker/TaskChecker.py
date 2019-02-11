@@ -5,7 +5,6 @@ import time
 import requests
 import cx_Oracle
 
-TRAY_TOOLTIP = 'StatusChecker' 
 TRAY_ICON_GREEN = 'iconGreen.png' 
 TRAY_ICON_BLUE = 'iconBlue.png'
 TRAY_ICON_RED = 'iconRed.png'
