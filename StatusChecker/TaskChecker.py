@@ -54,6 +54,7 @@ class TaskChecker:
 			if(output.status_code != 200):			
 				return False
 		except:
+			print("Exception in executeWebCallTask !!!")
 			return False
 		
 		return True
@@ -67,6 +68,7 @@ class TaskChecker:
 
 			cur.close()	
 		except:
+			print("Exception in executeSQLTask !!!")
 			return False
 			
 		return True
