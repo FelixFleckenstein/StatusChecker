@@ -5,9 +5,10 @@ class Task:
 		self.url = url
 		self.sql = sql
 		
-
 		self.countInRow = 0
 		self.erg = 0
+		
+		self.errorObjects = []
 		
 		if warningValue is None:
 			self.warningValue = 1

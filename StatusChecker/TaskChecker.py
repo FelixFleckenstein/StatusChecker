@@ -1,4 +1,5 @@
 from StatusChecker.Task import *
+from StatusChecker.ErrorObject import *
 import threading
 import datetime
 import time
@@ -16,11 +17,11 @@ class TaskChecker:
 	def __init__(self):
 		self.tasks = []
 
-	def addWebCallTask(self, name, url):	
-		self.tasks.append(Task(name, TYPE_URL_TEST, url, ''))
+	def addWebCallTask(self, name, url, warningValue = None, errorValue = None):	
+		self.tasks.append(Task(name, TYPE_URL_TEST, url, '', warningValue, errorValue))
 	
-	def addDBTask(self, name, sql):
-		self.tasks.append(Task(name, TYPE_SQL_TEST, '', sql))
+	def addDBTask(self, name, sql, warningValue = None, errorValue = None):
+		self.tasks.append(Task(name, TYPE_SQL_TEST, '', sql, warningValue, errorValue))
 		
 	def checkTasks(self, tBar, con):
 		t = threading.currentThread()
@@ -28,26 +29,35 @@ class TaskChecker:
 			isError = False
 			ret = True
 		
-			for task in self.tasks:		
+			for task in self.tasks:			
 				if task.type == TYPE_URL_TEST:
-					ret = self.executeWebCallTask(task.url)
+					ret = self.executeWebCallTask(task, task.url)
 				elif task.type == TYPE_SQL_TEST:
-					ret = self.executeSQLTask(task.sql, con)
+					ret = self.executeSQLTask(task, task.sql, con)
 		
 				if not ret:
-					ts = time.time()
-					st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-					print(st + ": Fehler: " + task.name)
-					isError = True
+					task.countInRow += 1
+					
+					if task.countInRow >= task.errorValue:
+						ts = time.time()
+						st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+						print(st + ": Fehler: " + task.name)
+						isError = True
+					else:
+						ts = time.time()
+						st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+						print(st + ": Counting: " + task.name + " => " + str(task.countInRow))
 				
 			if isError:
 				tBar.set_icon(TRAY_ICON_RED)
 			else:
+				if ret:
+					task.countInRow = 0
 				tBar.set_icon(TRAY_ICON_GREEN)
 		
 			time.sleep(60);
 
-	def executeWebCallTask(self, url):
+	def executeWebCallTask(self, task, url):
 		try:
 			output = requests.get(url)
 				
@@ -59,11 +69,37 @@ class TaskChecker:
 		
 		return True
 
-	def executeSQLTask(self, sql, con):
+	def executeSQLTask(self, task, sql, con):
 		try:
+			isError = False
+			
+			for t in task.errorObjects:
+				t.again = 0
+			
 			cur = con.cursor()
 			cur.execute(sql)
 			for result in cur:
+				found = False
+				for t in task.errorObjects:
+					if t.value == result:
+						t.again = 1
+						found = True
+				
+				if not found:
+					task.errorObjects.append(ErrorObject(result, 2)) #2 for not deleting in next Step, but not counting for "again" error
+						
+				print(result)
+				
+					
+			for t in task.errorObjects:
+				if t.again == 0:
+					task.errorObjects.remove(t)
+				
+			for t in task.errorObjects:
+				if t.again == 1:
+					isError = True
+				
+			if isError:
 				return False
 
 			cur.close()	

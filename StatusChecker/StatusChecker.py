@@ -22,11 +22,11 @@ class StatusChecker:
 		self.app = App(False)
 		self.tasks = TaskChecker()
 		
-	def addWebCallTask(self, name, url):
-		self.tasks.addWebCallTask(name, url)
+	def addWebCallTask(self, name, url, warningValue = None, errorValue = None):
+		self.tasks.addWebCallTask(name, url, warningValue, errorValue)
 		
-	def addDBTask(self, name, sql):
-		self.tasks.addDBTask(name, sql)
+	def addDBTask(self, name, sql, warningValue = None, errorValue = None):
+		self.tasks.addDBTask(name, sql, warningValue, errorValue)
 
 	def runMainLoop(self):
 		#Oracle DB-Connection starten
