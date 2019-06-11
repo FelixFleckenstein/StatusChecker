@@ -1,5 +1,5 @@
 class Task:
-	def __init__(self, name, type, url, sql, warningValue = None, errorValue = None):
+	def __init__(self, name, type, url, sql, warningValue = None, errorValue = None, counter_measurement = None):
 		self.name = name
 		self.type = type
 		self.url = url
@@ -19,3 +19,8 @@ class Task:
 			self.errorValue = 1
 		else:
 			self.errorValue = errorValue
+			
+		if counter_measurement is None:
+			self.counter_measurement = ""
+		else:
+			self.counter_measurement = counter_measurement

@@ -17,11 +17,11 @@ class TaskChecker:
 	def __init__(self):
 		self.tasks = []
 
-	def addWebCallTask(self, name, url, warningValue = None, errorValue = None):	
-		self.tasks.append(Task(name, TYPE_URL_TEST, url, '', warningValue, errorValue))
+	def addWebCallTask(self, name, url, warningValue = None, errorValue = None, counter_measurement = None):	
+		self.tasks.append(Task(name, TYPE_URL_TEST, url, '', warningValue, errorValue, counter_measurement))
 	
-	def addDBTask(self, name, sql, warningValue = None, errorValue = None):
-		self.tasks.append(Task(name, TYPE_SQL_TEST, '', sql, warningValue, errorValue))
+	def addDBTask(self, name, sql, warningValue = None, errorValue = None, counter_measurement = None):
+		self.tasks.append(Task(name, TYPE_SQL_TEST, '', sql, warningValue, errorValue, counter_measurement))
 		
 	def checkTasks(self, tBar, con):
 		t = threading.currentThread()
@@ -46,7 +46,7 @@ class TaskChecker:
 					else:
 						ts = time.time()
 						st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-						print(st + ": Counting: " + task.name + " => " + str(task.countInRow))
+						print(st + ": Counting: " + task.name + " => " + str(task.countInRow))						
 				
 			if isError:
 				tBar.set_icon(TRAY_ICON_RED)
@@ -100,10 +100,14 @@ class TaskChecker:
 					isError = True
 				
 			if isError:
+				if task.counter_measurement != "":
+					cur = con.cursor()
+					cur.execute(task.counter_measurement)
 				return False
 
 			cur.close()	
-		except:
+		except Exception as e:
+			print(e)
 			print("Exception in executeSQLTask !!!")
 			return False
 			
